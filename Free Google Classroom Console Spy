@@ -1,0 +1,55 @@
+// free console spy for people who need
+(function() {
+    console.log("%c[GC REMOTE SPY] activated", "color: cyan; font-size: 18px; font-weight: bold");
+
+    document.addEventListener('click', (e) => {
+        console.log("%c[CLICK] Target:", e.target, "Class:", e.target.className, "Text:", e.target.textContent?.slice(0,80));
+    }, true);
+
+ 
+    document.addEventListener('input', (e) => {
+        console.log("%c[INPUT] Value:", e.target.textContent || e.target.value, "Element:", e.target);
+    }, true);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            console.log("%c[ENTER KEY] Posted / Sent from:", e.target);
+        }
+    }, true);
+
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        console.log("%c[FETCH] URL:", args[0], "Payload:", args[1]);
+        return originalFetch(...args);
+    };
+
+    const originalXHR = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        console.log("%c[XHR] Method:", method, "URL:", url);
+        return originalXHR.apply(this, arguments);
+    };
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(m => {
+            if (m.addedNodes.length > 0) {
+                console.log("%c[DOM ADDED]", m.addedNodes.length, "nodes | Example:", m.addedNodes[0]);
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+
+    setInterval(() => {
+        document.querySelectorAll('button').forEach(btn => {
+            if (!btn._spied) {
+                btn.addEventListener('click', () => {
+                    console.log("%c[BUTTON CLICKED]", btn.textContent.trim() || btn.getAttribute('aria-label'), btn);
+                });
+                btn._spied = true;
+            }
+        });
+    }, 2000);
+
+    console.log("%cYAY IT LOADED LIKE A DIDDY!.", "color: lime; font-size: 16px");
+    console.log("%c[ VERY GOOD TIP] Clear console first (Ctrl+L) then test actions", "color: yellow");
+})();
